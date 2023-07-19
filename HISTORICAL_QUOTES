@@ -1,0 +1,25 @@
+with table_1 as (
+select id
+from shipments
+where route_id = 6005
+and status = 'accepted'
+)
+, table_2 as (
+select table_1.id as shipment_id
+, legs.id as leg_id
+from table_1
+left join legs on table_1.id = legs.shipment_id
+)
+, table_3 as (
+select table_2.shipment_id as shipment_id
+, table_2.leg_id as leg_id
+, receivable_line_items.price_cents as price_cents
+from table_2
+left join receivable_line_items on table_2.leg_id = receivable_line_items.leg_id
+where receivable_line_items.price_type_id = 7
+)
+select shipment_id
+, sum(price_cents)
+from table_3
+group by shipment_id
+order by 1 desc
